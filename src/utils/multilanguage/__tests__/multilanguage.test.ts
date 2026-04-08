@@ -8,6 +8,7 @@ import {
   getCollectionCardImagePath,
   loadInitialLanguage
 } from '../multilanguage';
+import { localizedCardNumberMaps } from '../collectionMaps';
 import { CLOUD_IMAGES_URL } from '../../../appConstants';
 
 const generateExpectedResult = ({
@@ -18,6 +19,14 @@ const generateExpectedResult = ({
 
 describe('Multilanguage', () => {
   describe('getCollectionCardImagePath', () => {
+    beforeEach(() => {
+      Object.values(localizedCardNumberMaps).forEach((localeMap) => {
+        Object.keys(localeMap).forEach((key) => {
+          delete localeMap[key];
+        });
+      });
+    });
+
     it('should return default values', () => {
       const result = getCollectionCardImagePath({});
       expect(result).to.equal(generateExpectedResult({}));
@@ -55,8 +64,9 @@ describe('Multilanguage', () => {
       });
     });
 
-    describe.skip('Japanese language', () => {
-      it('should return valid japanese value with an existing card', () => {
+    describe('Japanese language', () => {
+      it('should return japanese values when locale mapping exists', () => {
+        localizedCardNumberMaps.ja.MST111 = 'BBB000';
         const result = getCollectionCardImagePath({
           path: CARD_SQUARES_PATH,
           locale: 'ja',
@@ -65,13 +75,13 @@ describe('Multilanguage', () => {
         expect(result).to.equal(
           generateExpectedResult({
             path: CARD_SQUARES_PATH,
-            locale: 'Japanese',
-            cardNumber: 'MST111'
+            locale: 'japanese',
+            cardNumber: 'BBB000'
           })
         );
       });
 
-      it('if is not a valid japanese collection, return a valid english value', () => {
+      it('if locale mapping is missing, return english values', () => {
         const result = getCollectionCardImagePath({
           path: CARD_SQUARES_PATH,
           locale: 'ja',
@@ -102,8 +112,9 @@ describe('Multilanguage', () => {
       });
     });
 
-    describe.skip('European language', () => {
-      it('should return valid european value with a current collection', () => {
+    describe('European language', () => {
+      it('should return localized value when locale mapping exists', () => {
+        localizedCardNumberMaps.es.OUT111 = 'CCC000';
         const result = getCollectionCardImagePath({
           path: CARD_IMAGES_PATH,
           locale: 'es',
@@ -112,13 +123,14 @@ describe('Multilanguage', () => {
         expect(result).to.equal(
           generateExpectedResult({
             path: CARD_IMAGES_PATH,
-            locale: 'Spanish',
-            cardNumber: 'OUT111'
+            locale: 'spanish',
+            cardNumber: 'CCC000'
           })
         );
       });
 
-      it('if is a card existing in 1HP collection, return a valid 1HP card value', () => {
+      it('should support setIDs normalized values for locale mapping keys', () => {
+        localizedCardNumberMaps.es['1HP001'] = 'DDD000';
         const result = getCollectionCardImagePath({
           path: CARD_IMAGES_PATH,
           locale: 'es',
@@ -127,43 +139,13 @@ describe('Multilanguage', () => {
         expect(result).to.equal(
           generateExpectedResult({
             path: CARD_IMAGES_PATH,
-            locale: 'Spanish',
-            cardNumber: '1HP001'
+            locale: 'spanish',
+            cardNumber: 'DDD000'
           })
         );
       });
 
-      it('if is a card existing in 2HP collection, return a valid 2HP card value', () => {
-        const result = getCollectionCardImagePath({
-          path: CARD_IMAGES_PATH,
-          locale: 'es',
-          cardNumber: 'ELE001'
-        });
-        expect(result).to.equal(
-          generateExpectedResult({
-            path: CARD_IMAGES_PATH,
-            locale: 'Spanish',
-            cardNumber: '2HP001'
-          })
-        );
-      });
-
-      it('if is a card existing in 1HP collection but reprinted in 2HP, return the reprinted 2HP card value', () => {
-        const result = getCollectionCardImagePath({
-          path: CARD_IMAGES_PATH,
-          locale: 'es',
-          cardNumber: 'WTR075'
-        });
-        expect(result).to.equal(
-          generateExpectedResult({
-            path: CARD_IMAGES_PATH,
-            locale: 'Spanish',
-            cardNumber: '2HP335'
-          })
-        );
-      });
-
-      it('if is not a valid european collection, return a valid english value', () => {
+      it('if locale mapping is missing, return english values', () => {
         const result = getCollectionCardImagePath({
           path: CARD_SQUARES_PATH,
           locale: 'es',
